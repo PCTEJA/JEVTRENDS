@@ -1,0 +1,12 @@
+---
+import { categories, sourceTypes, label, type Build } from '../lib/catalog';
+interface Props { build: Build; }
+const { build } = Astro.props;
+---
+<article class="build-card">
+  <div class="card-meta"><a href={`/type/${build.sourceType}`}>{label(build.sourceType, sourceTypes)}</a><span>↗</span></div>
+  <h3><a href={`/builds/${build.slug}`}>{build.title}</a></h3>
+  <p>{build.summary}</p>
+  <a class="card-category" href={`/categories/${build.category}`}>{label(build.category, categories)}</a>
+  <div class="card-credit"><a href={build.authorUrl} target="_blank" rel="noopener noreferrer">{build.authorName}</a><a href={build.sourceUrl} target="_blank" rel="noopener noreferrer">Source ↗</a></div>
+</article>

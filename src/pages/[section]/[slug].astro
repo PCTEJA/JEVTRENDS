@@ -1,0 +1,8 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+export async function getStaticPaths() { return (await getCollection('articles')).map(article => ({ params: { section: article.data.kind, slug: article.id }, props: { article } })); }
+const { article } = Astro.props;
+const { Content } = await render(article);
+---
+<Layout title={`${article.data.title} — JevTrends`} description={article.data.description}><article class="container prose listing-page"><a class="text-link" href={`/${article.data.kind}`}>← More {article.data.kind}</a><p class="eyebrow">JevTrends · {article.data.publishedAt}</p><h1>{article.data.title}</h1><p class="page-intro">{article.data.description}</p><Content /></article></Layout>

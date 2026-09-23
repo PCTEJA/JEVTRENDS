@@ -1,0 +1,39 @@
+---
+import { site } from '../data/site';
+import Icon from './Icon.astro';
+---
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/" aria-label={`${site.name} home`}><img src="/favicon.svg" alt="" width="32" height="32" />Jev<span>Trends</span><span class="brand-dot">.</span></a>
+    <nav class="desktop-nav" aria-label="Main navigation">
+      <a href="/#directory">Explore</a><a href="/search">Search</a><a href="/guides">Guides</a><a href="/#sponsors">Sponsor</a>
+    </nav>
+    <div class="header-actions">
+      <a class="submit-link" href={site.ownerXUrl} target="_blank" rel="noopener noreferrer">Submit a build <Icon name="plus" /></a>
+      <button class="theme-toggle icon-button" type="button" aria-label="Switch to dark theme"><Icon name="moon" class="moon-icon" /><Icon name="sun" class="sun-icon" /></button>
+      <details class="mobile-menu">
+        <summary class="icon-button" aria-label="Navigation menu"><Icon name="menu" /></summary>
+        <nav aria-label="Mobile navigation"><a href="/#directory">Explore</a><a href="/search">Search</a><a href="/guides">Guides</a><a href="/blog">Blog</a><a href="/#sponsors">Sponsor</a><a href={site.ownerXUrl} target="_blank" rel="noopener noreferrer">Submit on X ↗</a></nav>
+      </details>
+    </div>
+  </div>
+</header>
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('.theme-toggle');
+  const preference = matchMedia('(prefers-color-scheme: dark)');
+  let saved: string | null = null;
+  try { saved = localStorage.getItem('jevtrends-theme'); } catch {}
+  const apply = (dark: boolean) => {
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    toggle?.setAttribute('aria-label', `Switch to ${dark ? 'light' : 'dark'} theme`);
+  };
+  apply(saved === 'dark' || (saved !== 'light' && preference.matches));
+  toggle?.addEventListener('click', () => {
+    saved = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    apply(saved === 'dark');
+    try { localStorage.setItem('jevtrends-theme', saved); } catch {}
+  });
+  preference.addEventListener('change', ({ matches }) => {
+    if (saved !== 'light' && saved !== 'dark') apply(matches);
+  });
+</script>

@@ -1,0 +1,28 @@
+---
+import BuildCard from './BuildCard.astro';
+import builds from '../data/builds.json';
+import { categories, sourceTypes, readFilters, selectBuilds, type Filters } from '../lib/catalog';
+interface Props { defaults?: Partial<Filters>; base?: string; }
+const { defaults = {}, base = '' } = Astro.props;
+const filters = readFilters(new URLSearchParams(), defaults);
+const result = selectBuilds(builds, filters);
+---
+<section class="catalog" data-directory data-defaults={JSON.stringify(filters)}>
+  <nav class="filter-links" aria-label="Source types"><a href="/#directory">All builds</a>{Object.entries(sourceTypes).map(([key, name]) => <a href={`/type/${key}`}>{name}</a>)}</nav>
+  <details class="category-browser"><summary>Browse by category</summary><nav class="filter-links" aria-label="Categories">{Object.entries(categories).map(([key, name]) => <a href={`/categories/${key}`}>{name}</a>)}</nav></details>
+  <form action="/search" role="search" class="catalog-form">
+    <label>Search builds<input type="search" name="q" value={filters.q} placeholder="Project, maker, or idea" /></label>
+    <label>Source<select name="type"><option value="">All sources</option>{Object.entries(sourceTypes).map(([key, name]) => <option value={key} selected={filters.type === key}>{name}</option>)}</select></label>
+    <label>Category<select name="category"><option value="">All categories</option>{Object.entries(categories).map(([key, name]) => <option value={key} selected={filters.category === key}>{name}</option>)}</select></label>
+    <label>Sort<select name="sort"><option value="newest">Newest added</option><option value="views" disabled>Most viewed — unavailable</option></select></label>
+    <button class="button button-primary" type="submit">Search</button>
+    <a class="text-link" href="/search" data-reset>Reset</a>
+  </form>
+  <noscript><p class="catalog-note">Search and combined filters need JavaScript. Browse every build using the source, category, and page links.</p></noscript>
+  <p class="catalog-note" data-result-count aria-live="polite">{result.total} builds · Page {result.page} of {result.pages} · Newest added to JevTrends</p>
+  <div class="build-grid" data-results>{result.items.map(build => <BuildCard build={build} />)}</div>
+  <div class="catalog-empty" data-empty hidden={result.total > 0}><h3>No builds found.</h3><p>Try another category or explore the full collection.</p><a href="/search" class="text-link" data-reset>Reset filters</a></div>
+  <nav class="pagination" data-pagination aria-label="Catalog pages">{Array.from({ length: result.pages }, (_, i) => <a href={i === 0 ? (base || '/') : `${base}/page/${i + 1}`} aria-current={result.page === i + 1 ? 'page' : undefined}>{i + 1}</a>)}</nav>
+  <p class="catalog-note" data-search-error hidden>Search could not load. The static category and source links still work. Submit again to retry.</p>
+</section>
+<script src="../scripts/directory.ts"></script>

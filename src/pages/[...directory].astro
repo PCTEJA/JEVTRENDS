@@ -1,0 +1,20 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Directory from '../components/Directory.astro';
+import builds from '../data/builds.json';
+import { categories, sourceTypes, selectBuilds, readFilters } from '../lib/catalog';
+export function getStaticPaths() {
+  const groups = [
+    { base: '', title: 'All builds', defaults: {} },
+    { base: '/search', title: 'Search builds', defaults: {} },
+    ...Object.entries(sourceTypes).map(([type, title]) => ({ base: `/type/${type}`, title, defaults: { type } })),
+    ...Object.entries(categories).map(([category, title]) => ({ base: `/categories/${category}`, title, defaults: { category } })),
+  ];
+  return groups.flatMap(group => {
+    const { pages } = selectBuilds(builds, readFilters(new URLSearchParams(), group.defaults));
+    return Array.from({ length: pages }, (_, i) => ({ params: { directory: (i === 0 ? group.base : `${group.base}/page/${i + 1}`).slice(1) }, props: { ...group, defaults: { ...group.defaults, page: i + 1 } } })).filter(route => route.params.directory);
+  });
+}
+const { title, defaults, base } = Astro.props;
+---
+<Layout title={`${title} — JevTrends`}><div class="container listing-page"><a class="text-link" href="/">← All builds</a><h1 data-catalog-heading>{title}</h1><p class="page-intro">Credited projects and experiments from the Jev community.</p><Directory defaults={defaults} base={base} /></div></Layout>

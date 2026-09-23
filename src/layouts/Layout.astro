@@ -1,0 +1,54 @@
+---
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../data/site';
+import '../styles/global.css';
+interface Props { title?: string; description?: string; }
+const { title = `${site.name} — Small decisions. Real possibilities.`, description = site.description } = Astro.props;
+const analytics = import.meta.env.PROD && import.meta.env.PUBLIC_ANALYTICS_ENABLED === 'true';
+const websiteId = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID;
+const scriptUrl = import.meta.env.PUBLIC_UMAMI_SCRIPT_URL;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="light dark" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={new URL(Astro.url.pathname, site.domain).href} />
+    <link rel="canonical" href={new URL(Astro.url.pathname, site.domain).href} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+    {analytics && websiteId && scriptUrl === 'https://cloud.umami.is/script.js' && <script is:inline define:vars={{ websiteId, scriptUrl }}>
+      if (['jevtrends.com', 'www.jevtrends.com'].includes(location.hostname)) {
+        const tracker = document.createElement('script');
+        tracker.src = scriptUrl;
+        tracker.defer = true;
+        tracker.dataset.websiteId = websiteId;
+        tracker.dataset.domains = 'jevtrends.com,www.jevtrends.com';
+        tracker.dataset.excludeSearch = 'true';
+        tracker.dataset.excludeHash = 'true';
+        tracker.dataset.doNotTrack = 'true';
+        document.head.append(tracker);
+      }
+    </script>}
+    <script is:inline>
+      (() => {
+        let theme;
+        try { theme = localStorage.getItem('jevtrends-theme'); } catch {}
+        document.documentElement.dataset.theme = theme === 'dark' || (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+        document.documentElement.dataset.js = '';
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header />
+    <main id="main" tabindex="-1"><slot /></main>
+    <Footer />
+  </body>
+</html>

@@ -1,0 +1,39 @@
+---
+interface Props { url: string; }
+const { url } = Astro.props;
+---
+<div class="x-embed" data-x-embed data-url={url}>
+  <button type="button" class="button embed-button" data-load-post hidden>Load original X post</button>
+  <p class="catalog-note">Loading the post connects to X. <a class="text-link" href={url} target="_blank" rel="noopener noreferrer">Read the original on X ↗</a></p>
+  <div data-post-container></div><p data-post-status aria-live="polite" class="catalog-note"></p>
+</div>
+<script>
+  interface XWidgets { widgets: { createTweet: (id: string, target: HTMLElement, options: Record<string, unknown>) => Promise<HTMLElement | undefined> }; }
+  let widgets: Promise<XWidgets> | undefined;
+  function loadWidgets() {
+    return widgets ??= new Promise<XWidgets>((resolve, reject) => {
+      const existing = (window as Window & { twttr?: XWidgets }).twttr;
+      if (existing?.widgets) { resolve(existing); return; }
+      const script = document.createElement('script');
+      const timeout = setTimeout(() => reject(new Error('Timed out')), 12000);
+      script.src = 'https://platform.twitter.com/widgets.js'; script.async = true;
+      script.onload = () => { clearTimeout(timeout); const api = (window as Window & { twttr?: XWidgets }).twttr; api?.widgets ? resolve(api) : reject(new Error('Unavailable')); };
+      script.onerror = () => { clearTimeout(timeout); reject(new Error('Unavailable')); };
+      document.head.append(script);
+    });
+  }
+  document.querySelectorAll<HTMLElement>('[data-x-embed]').forEach(root => {
+    const button = root.querySelector<HTMLButtonElement>('button')!;
+    const status = root.querySelector<HTMLElement>('[data-post-status]')!;
+    button.hidden = false;
+    button.addEventListener('click', async () => {
+      button.disabled = true; status.textContent = 'Loading original post…';
+      try {
+        const api = await loadWidgets();
+        const id = new URL(root.dataset.url!).pathname.split('/').pop()!;
+        const post = await Promise.race([api.widgets.createTweet(id, root.querySelector<HTMLElement>('[data-post-container]')!, { dnt: true, theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light' }), new Promise<undefined>(resolve => setTimeout(() => resolve(undefined), 12000))]);
+        status.textContent = post ? '' : 'X could not display this post. Use the original-source link above.';
+      } catch { status.textContent = 'X could not load. Use the original-source link above.'; }
+    });
+  });
+</script>

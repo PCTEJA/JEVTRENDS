@@ -1,0 +1,27 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import BuildCard from '../../components/BuildCard.astro';
+import XEmbed from '../../components/XEmbed.astro';
+import builds from '../../data/builds.json';
+import { categories, label } from '../../lib/catalog';
+import { getXSnapshot } from '../../lib/x-snapshot';
+export function getStaticPaths() { return builds.map(build => ({ params: { slug: build.slug }, props: { build } })); }
+const { build } = Astro.props;
+const related = builds.filter(item => item.slug !== build.slug && item.category === build.category).slice(0, 3);
+const snapshot = getXSnapshot();
+const metrics = snapshot.posts[build.slug];
+---
+<Layout title={`${build.title} — JevTrends`} description={build.summary}>
+  <div class="container listing-page"><a href="/" class="text-link">← Explore builds</a>
+    <article class="build-detail"><p class="eyebrow">{label(build.category, categories)}</p><h1>{build.title}</h1>
+      <p class="page-intro">{build.summary}</p>
+      <p>By <a href={build.authorUrl} class="text-link" target="_blank" rel="noopener noreferrer">{build.authorName} ↗</a></p>
+      <p class="catalog-note">{build.publishedAt ? `Source published ${build.publishedAt}` : 'Source publication date unavailable'} · Added {build.addedAt}</p>
+      <a class="button button-primary" href={build.sourceUrl} target="_blank" rel="noopener noreferrer">Visit original source ↗</a>
+      <dl class="measurements"><div><dt>Author-reported cost</dt><dd>{build.reportedCost ?? 'Not reported'}</dd></div><div><dt>Author-reported latency</dt><dd>{build.reportedLatency ?? 'Not reported'}</dd></div><div><dt>JevTrends views</dt><dd>Unavailable</dd></div></dl>
+      <p class="catalog-note">Reported measurements describe the author’s example and have not been independently benchmarked here.</p>
+      {build.sourceType === 'x-post' && <><h2>X post activity</h2><p>{metrics ? `${metrics.likes} likes · ${metrics.reposts} reposts · ${metrics.replies} replies` : 'Engagement data unavailable. The original post is linked below.'}</p>{metrics && <p class="catalog-note">Snapshot: {snapshot.fetchedAt}. X activity is separate from visits to JevTrends.</p>}<XEmbed url={build.sourceUrl} /></>}
+    </article>
+    <section class="related"><h2>Related builds</h2>{related.length ? <div class="build-grid">{related.map(item => <BuildCard build={item} />)}</div> : <p>No related builds yet. <a class="text-link" href="/">Explore the collection →</a></p>}</section>
+  </div>
+</Layout>

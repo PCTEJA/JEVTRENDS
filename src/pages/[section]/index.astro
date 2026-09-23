@@ -1,0 +1,9 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+export function getStaticPaths() { return ['guides', 'blog'].map(section => ({ params: { section } })); }
+const { section } = Astro.params;
+const articles = (await getCollection('articles')).filter(article => article.data.kind === section);
+const title = section === 'guides' ? 'Guides' : 'From the directory';
+---
+<Layout title={`${title} — JevTrends`}><div class="container listing-page"><p class="eyebrow">JevTrends notes</p><h1>{title}</h1><div class="article-list">{articles.map(article => <article class="build-card"><p class="eyebrow">{article.data.publishedAt}</p><h2><a href={`/${section}/${article.id}`}>{article.data.title}</a></h2><p>{article.data.description}</p><a class="text-link" href={`/${section}/${article.id}`}>Read article →</a></article>)}</div></div></Layout>

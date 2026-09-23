@@ -7,5 +7,5 @@
 - Owner additions: supplied secrets saved in ignored `.env`; `.env.example` has blank private values. Rotate exposed credentials/hook. Git excludes generated cache/output.
 - X bearer lookup returns 401. Live counts need a replacement token; unavailable counts never become zero.
 - Umami Hobby: tracker configured, 100K events/month (not visitors), no reporting API/key. Public views/chart/sort remain unavailable. Verify tracking after production deployment.
-- Git: `main`, remote `PCTEJA/JEVTRENDS`; user authorized push. No hook/DNS changes.
+- Git: implementation pushed to `PCTEJA/JEVTRENDS` main (`22173b1`). Staged/output secret scans passed; `.env` untracked. No hook/DNS changes.
 - Next: sponsor eligibility and `/sponsors`, `/submit`.
